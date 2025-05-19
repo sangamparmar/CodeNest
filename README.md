@@ -176,7 +176,6 @@ We welcome contributions from the community! Here's how you can help:
 This project is licensed under the [MIT License](LICENSE).
 
 <div align="center">
-<img src="/placeholder.svg?height=100&width=100" alt="CodeNest Small Logo" style="margin: 20px 0"/>
 
 <h3>🪺 CodeNest: Elevate Your Collaborative Coding Experience</h3>
 
