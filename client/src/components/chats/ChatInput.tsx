@@ -1,10 +1,10 @@
-import React from "react";
 import { useAppContext } from "@/context/AppContext";
 import { useChatRoom } from "@/context/ChatContext";
 import { useSocket } from "@/context/SocketContext";
 import { ChatMessage } from "@/types/chat";
 import { SocketEvent } from "@/types/socket";
 import { formatDate } from "@/utils/formateDate";
+import React from "react";
 import { FormEvent, useRef } from "react";
 import { LuSendHorizontal } from "react-icons/lu";
 import { v4 as uuidV4 } from "uuid"; // Ensure uuidV4 is imported
@@ -41,9 +41,10 @@ function ChatInput() {
     >
       <input
         type="text"
-        className="w-full flex-grow rounded-md border-none bg-dark p-2 outline-none"
+        className="w-full flex-grow rounded-md border-2 border-primary bg-slate-800 p-2 outline-none text-white font-medium"
         placeholder="Enter a message..."
         ref={inputRef}
+        style={{ color: 'white' }}
       />
       <button
         className="flex items-center justify-center rounded-r-md bg-primary p-2 text-black"

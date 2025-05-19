@@ -1,235 +1,446 @@
-import { useState, useEffect } from 'react'
-import './homepage.css';
-import { motion, AnimatePresence } from 'framer-motion'
-import illustration from "@/assets/illustration.svg"
-import FormComponent from "@/components/forms/FormComponent"
-import React from 'react';
+"use client"
 
-function HomePage() {
-    const [theme, setTheme] = useState('light')
-    const [showFeatures, setShowFeatures] = useState(false)
-    const [activeFeature, setActiveFeature] = useState(0)
+import React from "react"
 
-    useEffect(() => {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        setTheme(prefersDark ? 'dark' : 'light')
-    }, [])
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { useTheme } from "next-themes"
+import { Code } from "lucide-react"
+import { Button } from "../components/ui/button"
+import { Card } from "../components/ui/card"
+import { Input } from "../components/ui/input"
+import { toast } from "../components/ui/use-toast"
+import { useNavigate } from "react-router-dom"
+import "../styles/input-styles.css"
 
-    const toggleTheme = () => {
-        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light')
+export default function HomePage() {
+  const [mounted, setMounted] = useState(false)
+  const { setTheme } = useTheme()
+  const [roomId, setRoomId] = useState("")
+  const [username, setUsername] = useState("")
+  const [isGenerating, setIsGenerating] = useState(false)
+  const navigate = useNavigate()
+    // Split useEffect hooks for better hydration consistency
+  useEffect(() => {
+    // Apply dark theme immediately
+    setTheme("dark")
+  }, [setTheme])
+  
+  // Handle mounting separately to avoid hydration mismatch
+  useEffect(() => {
+    // Use requestAnimationFrame for smoother transitions
+    const frame = requestAnimationFrame(() => {
+      setMounted(true)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [])
+  // Generate particles for the background with deterministic values
+  // Using a seeded approach to ensure client/server consistency
+  const generateDeterministicValue = (index: number, multiplier: number = 1, offset: number = 0) => {
+    // Create a deterministic value based on the index
+    return (((index * 13) % 100) * multiplier / 100) + offset;
+  };
+  
+  const particles = Array.from({ length: 100 }).map((_, i) => ({
+    id: i,
+    x: generateDeterministicValue(i, 100),
+    y: generateDeterministicValue(i + 50, 100),
+    size: generateDeterministicValue(i + 25, 3, 1),
+    duration: generateDeterministicValue(i + 10, 20, 10),
+    delay: generateDeterministicValue(i + 5, 10),
+  }));
+
+  const createNewRoomId = () => {
+    setIsGenerating(true)
+    setTimeout(() => {
+      // Generate a 6 character alphanumeric room ID in the format "az549k"
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      setRoomId(result);
+      setIsGenerating(false)
+    }, 600)
+  };
+
+  const handleJoinRoom = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!validateForm()) return
+    
+    // Store username in sessionStorage
+    sessionStorage.setItem('editorUsername', username)
+    
+    // Use React Router's navigate to go to the editor page immediately
+    // Pass the username directly in the state to avoid sessionStorage issues
+    navigate(`/editor/${roomId}`, {
+      state: { username }
+    })
+  }
+
+  const validateForm = () => {
+    if (username.trim().length === 0) {
+      toast({
+        title: "Error",
+        description: "Enter your username",
+        variant: "destructive",
+      })
+      return false
+    } else if (roomId.trim().length === 0) {
+      toast({
+        title: "Error",
+        description: "Enter a room ID",
+        variant: "destructive",
+      })
+      return false
+    } else if (roomId.trim().length < 5) {
+      toast({
+        title: "Error",
+        description: "Room ID must be at least 5 characters long",
+        variant: "destructive",
+      })
+      return false
+    } else if (username.trim().length < 3) {
+      toast({
+        title: "Error",
+        description: "Username must be at least 3 characters long",
+        variant: "destructive",
+      })
+      return false
     }
+    return true
+  }
+  if (!mounted) return null
+  return (
+    <div className="relative h-screen flex flex-col items-center justify-between overflow-hidden bg-[#050816]" suppressHydrationWarning>
+      {/* Animated background particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {particles.map((particle) => (
+          <motion.div
+            key={particle.id}
+            className="absolute rounded-full bg-cyan-500"
+            style={{
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+            }}
+            initial={{
+              opacity: 0.1,
+              x: `${particle.x}%`,
+              y: `${particle.y}%`,
+            }}
+            animate={{
+              opacity: [0.1, 0.5, 0.1],
+              scale: [1, 1.5, 1],
+              x: [`${particle.x}%`, `${particle.x + (Math.random() * 10 - 5)}%`],
+              y: [`${particle.y}%`, `${particle.y + (Math.random() * 10 - 5)}%`],
+            }}
+            transition={{
+              duration: particle.duration,
+              repeat: Number.POSITIVE_INFINITY,
+              delay: particle.delay,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+      </div>
 
-    const features = [
-        { icon: '🚀', title: 'Instant Sync', description: 'Your code syncs in real-time across all devices.' },
-        { icon: '🔒', title: 'Secure Sharing', description: 'Share your code securely with team members.' },
-        { icon: '🎨', title: 'Syntax Highlighting', description: 'Beautiful syntax highlighting for over 100 languages.' },
-        { icon: '🔍', title: 'Smart Search', description: 'Find what you need quickly with our powerful search.' },
-    ]
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setActiveFeature((prev) => (prev + 1) % features.length)
-        }, 5000)
-        return () => clearInterval(interval)
-    }, [])
-
-    return (
-        <div className={`flex min-h-screen flex-col items-center justify-center transition-colors duration-500 ${
-            theme === 'dark' 
-                ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-gray-800 text-white' 
-                : 'bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100 text-gray-800'
-        }`}>
-            {/* Glass morphism navbar */}
-            <nav className="fixed top-0 left-0 right-0 flex justify-between items-center p-5 z-50 backdrop-blur-lg bg-opacity-70 border-b border-opacity-20 shadow-lg" 
-                style={{ 
-                    backgroundColor: theme === 'dark' ? 'rgba(30, 30, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-                    borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                }}>
-                <motion.div 
-                    className="flex items-center gap-2"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+      {/* Animated gradient orbs */}      <motion.div
+        className="absolute top-1/4 -left-20 w-80 h-80 bg-purple-700 rounded-full mix-blend-screen filter blur-[80px] opacity-30"
+        initial={{ x: 0, y: 0 }}
+        animate={{
+          x: [0, 30, 0],
+          y: [0, 20, 0],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Number.POSITIVE_INFINITY,
+          ease: "easeInOut",
+          repeatDelay: 0, // Ensure consistent timing
+        }}
+      />      <motion.div
+        className="absolute bottom-1/4 -right-20 w-80 h-80 bg-cyan-700 rounded-full mix-blend-screen filter blur-[80px] opacity-30"
+        initial={{ x: 0, y: 0 }}
+        animate={{
+          x: [0, -30, 0],
+          y: [0, -20, 0],
+        }}
+        transition={{
+          duration: 10,
+          repeat: Number.POSITIVE_INFINITY,
+          ease: "easeInOut",
+          repeatDelay: 0, // Ensure consistent timing
+        }}
+      />{/* Digital circuit lines */}
+      <div className="absolute inset-0 z-0 opacity-20">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#0ea5e9" strokeWidth="0.5" />
+            </pattern>
+            <linearGradient id="circuitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.3" />
+            </linearGradient>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+          <path
+            d="M0,50 Q25,25 50,50 T100,50 T150,50 T200,50"
+            stroke="url(#circuitGradient)"
+            strokeWidth="1"
+            fill="none"
+            transform="translate(0, 100)"
+          />
+          <path
+            d="M0,50 Q25,75 50,50 T100,50 T150,50 T200,50"
+            stroke="url(#circuitGradient)"
+            strokeWidth="1"
+            fill="none"
+            transform="translate(50, 200)"
+          />
+        </svg>
+      </div>      {/* Main content */}
+      <div className="container relative z-10 px-4 mx-auto flex flex-col items-center justify-center mt-6 mb-2">        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="text-center mb-4"
+        >          <motion.h1
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 tracking-tight"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+          >
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
+              Code<span className="text-cyan-400">Nest</span>
+            </span>
+          </motion.h1>          <motion.p
+            className="text-sm md:text-base max-w-2xl mx-auto mb-2 text-cyan-100/70"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+          >
+            Join a secure collaborative coding environment and build the future together
+          </motion.p>
+        </motion.div>        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.5 }}
+          className="w-full max-w-sm"
+        >
+          <Card className="overflow-hidden border-0 bg-black/50 backdrop-blur-xl border border-cyan-900/50 shadow-[0_0_15px_rgba(8,145,178,0.2)]">
+            <div className="p-4 sm:p-5">              <div className="mb-5 flex justify-center">
+                <motion.div
+                  className="h-12 w-12 rounded-md bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg"
+                  animate={{
+                    boxShadow: [
+                      "0 0 0 rgba(8, 145, 178, 0.4)",
+                      "0 0 20px rgba(8, 145, 178, 0.6)",
+                      "0 0 0 rgba(8, 145, 178, 0.4)",
+                    ],
+                  }}
+                  transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
                 >
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <span className="text-white font-bold">C</span>
-                    </div>
-                    <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} tracking-tight`}>
-                        CodeTogether
-                    </h1>
+                  <Code className="h-6 w-6 text-white" />
                 </motion.div>
-                <div className="flex items-center gap-4">
-                    <motion.button 
-                        onClick={() => setShowFeatures(!showFeatures)}
-                        className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 ${
-                            theme === 'dark'
-                                ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/30'
-                                : 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-                        }`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        {showFeatures ? 'Hide Features' : 'Show Features'}
-                    </motion.button>
-                    <motion.button 
-                        onClick={toggleTheme}
-                        className={`p-3 rounded-full transition-colors duration-300 ${
-                            theme === 'dark' 
-                                ? 'bg-gradient-to-br from-yellow-300 to-yellow-500 text-gray-900 shadow-lg shadow-yellow-500/30' 
-                                : 'bg-gradient-to-br from-gray-700 to-gray-900 text-white shadow-lg shadow-gray-800/30'
-                        }`}
-                        whileHover={{ scale: 1.1, rotate: 10 }}
-                        whileTap={{ scale: 0.9 }}
-                    >
-                        {theme === 'dark' ? '🌞' : '🌙'}
-                    </motion.button>
-                </div>
-            </nav>
+              </div>
 
-            {/* Main content */}
-            <div className="mt-28 mb-8 container mx-auto flex flex-col lg:flex-row items-center justify-evenly gap-12 px-4">
-                <motion.div 
-                    className="flex flex-col items-center justify-center lg:w-1/2 max-w-xl"
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.7 }}
-                >
-                    <motion.div
-                        initial={{ scale: 0.8 }}
-                        animate={{ scale: 1 }}
-                        transition={{ 
-                            duration: 2,
-                            repeat: Infinity,
-                            repeatType: "reverse",
-                            ease: "easeInOut"
+              <h2 className="text-center text-xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
+                Access Terminal
+              </h2>              <form onSubmit={handleJoinRoom} className="space-y-5">
+                <div>
+                  <label className="neon-label mb-2 block">ROOM ID</label>
+                  <div className="neon-input-wrapper compact">
+                    <div className="neon-icon-container">
+                      <motion.div
+                        className="neon-icon"
+                        initial={{ rotate: 0 }}
+                        animate={{
+                          rotate: isGenerating ? [0, 360] : 0,
                         }}
-                    >
-                        <img
-                            src={illustration}
-                            alt="Code Sync Illustration"
-                            className="w-[300px] sm:w-[450px] drop-shadow-2xl"
-                        />
-                    </motion.div>
-                    
-                    <div className={`mt-8 p-6 rounded-2xl backdrop-blur-md w-full max-w-md ${
-                        theme === 'dark' 
-                            ? 'bg-white/10 shadow-xl' 
-                            : 'bg-white/50 shadow-lg'
-                    }`}>
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeFeature}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.5 }}
-                                className="text-center"
-                            >
-                                <motion.p 
-                                    className="text-5xl mb-4"
-                                    animate={{ 
-                                        scale: [1, 1.2, 1],
-                                        rotate: [0, 5, 0, -5, 0] 
-                                    }}
-                                    transition={{ duration: 2, repeat: Infinity }}
-                                >
-                                    {features[activeFeature].icon}
-                                </motion.p>
-                                <h2 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
-                                    {features[activeFeature].title}
-                                </h2>
-                                <p className={`text-base ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                                    {features[activeFeature].description}
-                                </p>
-                            </motion.div>
-                        </AnimatePresence>
+                        transition={{ duration: 1, repeat: isGenerating ? Number.POSITIVE_INFINITY : 0 }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                        </svg>
+                      </motion.div>
                     </div>
-                </motion.div>
-
-                <motion.div 
-                    className="lg:w-1/2 max-w-md w-full"
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.7, delay: 0.2 }}
-                >
-                    <div className={`rounded-2xl overflow-hidden shadow-2xl ${
-                        theme === 'dark' 
-                            ? 'bg-gray-800/50 backdrop-blur-lg border border-gray-700' 
-                            : 'bg-white/80 backdrop-blur-lg border border-gray-200'
-                    }`}>
-                        <FormComponent />
+                    <Input
+                      type="text"
+                      placeholder="Enter secure room ID"
+                      className="neon-input"
+                      value={roomId}
+                      onChange={(e: { target: { value: React.SetStateAction<string> } }) => setRoomId(e.target.value)}
+                    />
+                    <div className="input-glow"></div>
+                  </div>
+                </div>                <div>
+                  <label className="neon-label mb-2 block">USERNAME</label>
+                  <div className="neon-input-wrapper compact">
+                    <div className="neon-icon-container">
+                      <div className="neon-icon">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                      </div>
                     </div>
-                </motion.div>
-            </div>
-
-            {/* Features section */}
-            <AnimatePresence>
-                {showFeatures && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 50 }}
-                        className="container mx-auto px-4 pb-12"
-                    >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {features.map((feature, index) => (
-                                <motion.div
-                                    key={index}
-                                    className={`p-6 rounded-xl backdrop-blur-md shadow-xl ${
-                                        theme === 'dark' 
-                                            ? 'bg-gradient-to-br from-gray-800/70 to-purple-900/70 border border-gray-700/50' 
-                                            : 'bg-gradient-to-br from-white/70 to-blue-100/70 border border-gray-200/50'
-                                    }`}
-                                    whileHover={{ 
-                                        scale: 1.05, 
-                                        boxShadow: theme === 'dark' 
-                                            ? '0 20px 25px -5px rgba(124, 58, 237, 0.2)' 
-                                            : '0 20px 25px -5px rgba(59, 130, 246, 0.2)'
-                                    }}
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                                >
-                                    <div className={`w-16 h-16 mb-4 rounded-full flex items-center justify-center ${
-                                        theme === 'dark'
-                                            ? 'bg-purple-800/50'
-                                            : 'bg-blue-500/20'
-                                    }`}>
-                                        <p className="text-3xl">{feature.icon}</p>
-                                    </div>
-                                    <h3 className={`text-xl font-bold mb-2 ${
-                                        theme === 'dark'
-                                            ? 'text-white'
-                                            : 'text-gray-800'
-                                    }`}>{feature.title}</h3>
-                                    <p className={`${
-                                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-                                    }`}>{feature.description}</p>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Modern gradient footer */}
-            <footer className={`w-full py-6 px-4 mt-auto text-center ${
-                theme === 'dark' 
-                    ? 'bg-gradient-to-r from-gray-900 to-purple-900 text-gray-300' 
-                    : 'bg-gradient-to-r from-blue-50 to-purple-100 text-gray-700'
-            }`}>
-                <div className="container mx-auto">
-                    <p className="font-medium">&copy; {new Date().getFullYear()} CodeTogether. All rights reserved.</p>
-                    <div className="flex justify-center gap-4 mt-3">
-                        <div className={`h-1 w-1 rounded-full ${theme === 'dark' ? 'bg-purple-500' : 'bg-blue-500'}`}></div>
-                        <div className={`h-1 w-1 rounded-full ${theme === 'dark' ? 'bg-purple-500' : 'bg-blue-500'}`}></div>
-                        <div className={`h-1 w-1 rounded-full ${theme === 'dark' ? 'bg-purple-500' : 'bg-blue-500'}`}></div>
-                    </div>
+                    <Input
+                      type="text"
+                      placeholder="Choose your identity"
+                      className="neon-input"
+                      value={username}
+                      onChange={(e: { target: { value: React.SetStateAction<string> } }) => setUsername(e.target.value)}
+                    />
+                    <div className="input-glow"></div>
+                  </div>
                 </div>
-            </footer>
+
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="submit"
+                    className="relative w-full py-6 text-lg font-semibold overflow-hidden bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 border-0 shadow-[0_0_15px_rgba(8,145,178,0.5)]"
+                  >
+                    <span className="relative z-10">Initialize Session</span>
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-purple-700"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: 0 }}
+                      transition={{ duration: 0.4 }}
+                    />
+                  </Button>
+                </motion.div>                <motion.button
+                  type="button"
+                  className="w-full mt-2 flex items-center justify-center gap-2 py-3 text-sm font-medium text-cyan-400 transition-all border border-cyan-900/50 bg-black/50 hover:bg-cyan-900/20 hover:text-cyan-300 hover:border-cyan-600/50 relative overflow-hidden"
+                  style={{ 
+                    clipPath: "polygon(0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px))" 
+                  }}
+                  onClick={createNewRoomId}
+                  whileHover={{ 
+                    boxShadow: "0 0 15px rgba(8, 145, 178, 0.4)",
+                    scale: 1.01
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={isGenerating}
+                >
+                  <span className="absolute bg-gradient-to-r from-cyan-500/10 to-transparent w-10 h-full left-0 top-0 transform -skew-x-12 animate-shimmer"></span>
+                  {isGenerating ? (
+                    <svg
+                      className="animate-spin h-4 w-4 mr-1 text-cyan-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-cyan-400"
+                    >
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                  )}
+                  <span className="relative z-10">Generate Secure Room ID</span>
+                </motion.button>
+              </form>
+            </div>
+          </Card>
+        </motion.div>      </div>
+
+      {/* Removed animated tech rings */}      {/* Futuristic data streams - deterministic for hydration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 10 }).map((_, i) => {
+          // Use the deterministic function we created earlier
+          const streamWidth = generateDeterministicValue(i + 100, 200, 100);
+          const streamLeft = generateDeterministicValue(i + 200, 100);
+          const streamTop = generateDeterministicValue(i + 300, 100);
+          const animDuration = generateDeterministicValue(i + 400, 3, 2);
+          const animDelay = generateDeterministicValue(i + 500, 5);
+          
+          return (
+            <motion.div
+              key={`stream-${i}`}
+              className="absolute h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"
+              style={{
+                width: `${streamWidth}px`,
+                left: `${streamLeft}%`,
+                top: `${streamTop}%`,
+                opacity: 0.3,
+              }}
+              initial={{ x: "-100%", opacity: 0 }}
+              animate={{
+                x: ["-100%", "200%"],
+                opacity: [0, 0.7, 0],
+              }}
+              transition={{
+                duration: animDuration,
+                repeat: Number.POSITIVE_INFINITY,
+                delay: animDelay,
+                ease: "linear",
+                repeatDelay: 0, // Ensure consistent timing
+              }}
+            />
+          );
+        })}
+      </div>
+
+      {/* Footer */}
+      <motion.footer
+        className="w-full py-6 px-4 mt-auto text-center text-cyan-500/60"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 1 }}
+      >
+        <div className="container mx-auto">
+          <p className="font-medium">&copy; {new Date().getFullYear()} CodeNest. All rights reserved.</p>
+          <div className="flex justify-center gap-4 mt-3">
+            <div className="h-1 w-1 rounded-full bg-cyan-500"></div>
+            <div className="h-1 w-1 rounded-full bg-purple-500"></div>
+            <div className="h-1 w-1 rounded-full bg-cyan-500"></div>
+          </div>
         </div>
-    )
+      </motion.footer>
+    </div>
+  )
 }
-
-export default HomePage
-

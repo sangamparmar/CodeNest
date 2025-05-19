@@ -6,9 +6,6 @@ import { toast } from "react-hot-toast";
 import { useAppContext } from "./AppContext";
 import { useSocket } from "./SocketContext";
 
-interface RoomSettings {
-    everyoneCanEdit: boolean;
-}
 
 interface RoomSettingsContextType {
     everyoneCanEdit: boolean;
@@ -33,7 +30,7 @@ export const useRoomSettings = (): RoomSettingsContextType => {
 
 function RoomSettingsProvider({ children }: { children: ReactNode }) {
     const { socket } = useSocket();
-    const { users, currentUser } = useAppContext();
+    const { users } = useAppContext();
     const [everyoneCanEdit, setEveryoneCanEdit] = useState(false);
     const [pendingAccessRequests, setPendingAccessRequests] = useState<
         Array<{ username: string; socketId: string }>

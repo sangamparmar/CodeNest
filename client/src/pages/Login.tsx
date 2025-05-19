@@ -1,113 +1,320 @@
-import React, { useState, FormEvent } from "react";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './style.css';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { motion } from 'framer-motion';
+"use client"
+
+import React from "react"
+import { useState, type FormEvent, useEffect, useRef } from "react"
+import "bootstrap/dist/css/bootstrap.min.css"
+import "./auth.css"
+import { Link, useNavigate } from "react-router-dom"
+import axios from "axios"
+import { motion } from "framer-motion"
+
+// Use the same backend URL definition as in Register.tsx
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const navigate = useNavigate();
+  const [email, setEmail] = useState<string>("")
+  const [password, setPassword] = useState<string>("")
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>("")
+  const [statusMessage, setStatusMessage] = useState<string>("")
+  const navigate = useNavigate()
+  const terminalRef = useRef<HTMLDivElement>(null)
+  // Terminal typing effect with proper cleanup
+  useEffect(() => {
+    if (statusMessage && terminalRef.current) {
+      const terminal = terminalRef.current
+      terminal.innerHTML = ""; // Clear previous content
+      const txt = `> ${statusMessage}`
+      
+      // Display full message immediately instead of typing it character by character
+      terminal.textContent = txt;
+      
+      // Add blinking cursor after the text
+      const cursorSpan = document.createElement('span');
+      cursorSpan.className = 'cursor';
+      cursorSpan.textContent = '_';
+      terminal.appendChild(cursorSpan);
+    }
+  }, [statusMessage])
+
+  // Particle animation
+  useEffect(() => {
+    const canvas = document.getElementById("particles") as HTMLCanvasElement
+    if (!canvas) return
+
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+
+    const particles: {
+      x: number
+      y: number
+      size: number
+      speedX: number
+      speedY: number
+      color: string
+    }[] = []
+
+    const createParticles = () => {
+      const particleCount = 100
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 0.5,
+          speedX: Math.random() * 0.5 - 0.25,
+          speedY: Math.random() * 0.5 - 0.25,
+          color: `rgba(${Math.floor(Math.random() * 100 + 155)}, ${Math.floor(
+            Math.random() * 100 + 155,
+          )}, 255, ${Math.random() * 0.5 + 0.25})`,
+        })
+      }
+    }
+
+    const animateParticles = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i]
+        ctx.fillStyle = p.color
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fill()
+
+        p.x += p.speedX
+        p.y += p.speedY
+
+        if (p.x > canvas.width) p.x = 0
+        if (p.x < 0) p.x = canvas.width
+        if (p.y > canvas.height) p.y = 0
+        if (p.y < 0) p.y = canvas.height
+      }
+
+      requestAnimationFrame(animateParticles)
+    }
+
+    createParticles()
+    animateParticles()
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+
+    window.addEventListener("resize", handleResize)
+
+    return () => {
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [])
 
   const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    setIsLoading(true);
+    event.preventDefault()
+    setIsLoading(true)
+    setErrorMessage("")
+    setStatusMessage("Authenticating credentials...")
 
-    try {
-      const result = await axios.post('https://codetogether-mxp7.onrender.com/login', { email, password });
+    try {      const normalizedEmail = email.trim().toLowerCase()      // Minimal delay for visual feedback
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
+      const result = await axios.post(`${BACKEND_URL}/login`, {
+        email: normalizedEmail,
+        password,
+      });
       if (result.data.message === "Login successful") {
-        // Save the token to localStorage for authentication
-        localStorage.setItem('authToken', result.data.token);
-        localStorage.setItem('username', email.split('@')[0]); // Use part of email as username if needed
-        
-        // Success notification
-        alert("Login successful!");
-        
-        // Navigate to the homepage
-        navigate('/homepage');
+        setStatusMessage("Authentication successful. Establishing secure connection...")
+        // Very minimal delay for visual feedback
+        await new Promise((resolve) => setTimeout(resolve, 50))
+          localStorage.setItem("authToken", result.data.token)
+        localStorage.setItem("username", normalizedEmail.split("@")[0])
+        setStatusMessage("Connection established. Initializing room creation interface...")
+
+        // Very minimal delay for visual feedback
+        await new Promise((resolve) => setTimeout(resolve, 50))
+
+        alert("Login successful!")
+        navigate("/HomePage")
       } else {
-        alert("Invalid email or password. Please try again.");
+        setStatusMessage("Authentication failed. Invalid credentials.")
+        setErrorMessage("Invalid email or password. Please try again.")
       }
     } catch (error: any) {
-      console.error('Login error:', error);
-      
+      console.error("Login error:", error)
+      setStatusMessage("Error encountered during authentication process.")
+
       if (error.response && error.response.data) {
-        // Show specific error message from server if available
-        alert(error.response.data.message || "An error occurred during login. Please try again.");
+        const message = error.response.data.message || "An error occurred during login. Please try again."
+        setErrorMessage(message)
+
+        if (error.response.status === 403 && error.response.data.needsVerification) {
+          const resendConfirm = window.confirm(
+            "Your email has not been verified. Would you like to resend the verification email?",
+          )
+
+          if (resendConfirm) {
+            try {
+              setStatusMessage("Resending verification code...")
+              const emailToResend = email.trim().toLowerCase()
+              const resendResult = await axios.post(`${BACKEND_URL}/resend-otp`, { email: emailToResend })
+              alert(resendResult.data.message || "Verification email sent. Please check your inbox.")
+              navigate("/register")
+            } catch (resendError: any) {
+              console.error("Resend OTP error:", resendError)
+              setStatusMessage("Failed to resend verification code.")
+              alert("Failed to resend verification email. Please try again.")
+            }
+          }
+        }
       } else {
-        alert("An error occurred during login. Please try again.");
+        setErrorMessage("An error occurred during login. Please try again.")
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-gradient">
-      <motion.div 
-        className="card shadow-lg rounded-lg p-5"
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        style={{ width: '400px', maxWidth: '90%' }}
-      >
-        <h2 className="text-center mb-4 text-primary fw-bold">Welcome Back</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="email" className="form-label text-muted">Email Address</label>
-            <div className="input-group">
-              <span className="input-group-text"><i className="bi bi-envelope-fill"></i></span>
+    <div className="futuristic-auth-container">
+      <canvas id="particles" className="particles-canvas"></canvas>
+      <div className="cyber-grid"></div>
+
+      <motion.div
+        className="futuristic-auth-card"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{
+          duration: 0.5,
+          ease: [0.22, 1, 0.36, 1],
+        }}      >
+        <div className="card-glow"></div>
+
+        <div className="futuristic-auth-header">
+          <h2>
+            <span className="text-gradient">CodeNest</span>
+            <span className="header-subtitle">Access Terminal</span>
+          </h2>
+        </div>
+
+        {errorMessage && (
+          <motion.div
+            className="futuristic-auth-error"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            {errorMessage}
+          </motion.div>
+        )}
+        
+        <div className="terminal-container">
+          <div ref={terminalRef} className="terminal-text">
+            {!statusMessage && "> System ready. Awaiting credentials..."}
+          </div>
+        </div>
+          <form onSubmit={handleSubmit} className="futuristic-auth-form">
+          <div className="input-group mt-3 mb-4">
+            <label htmlFor="email">
+              <span className="label-icon">⟨⟩</span>
+              Email Address
+            </label>
+            <div className="futuristic-input-wrapper">
+              <span className="input-icon">
+                <i className="bi bi-envelope-fill"></i>
+              </span>
               <input
                 type="email"
                 id="email"
                 placeholder="Enter your email"
-                className="form-control"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="futuristic-input"
+                autoComplete="username"
               />
+              <span className="input-glow"></span>
             </div>
           </div>
-          <div className="mb-4">
-            <label htmlFor="password" className="form-label text-muted">Password</label>
-            <div className="input-group">
-              <span className="input-group-text"><i className="bi bi-lock-fill"></i></span>
+
+          <div className="input-group mb-4">
+            <label htmlFor="password">
+              <span className="label-icon">⟨⟩</span>
+              Password
+            </label>
+            <div className="futuristic-input-wrapper">
+              <span className="input-icon">
+                <i className="bi bi-lock-fill"></i>
+              </span>
               <input
                 type="password"
                 id="password"
                 placeholder="Enter your password"
-                className="form-control"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="futuristic-input"
+                autoComplete="current-password"
               />
+              <span className="input-glow"></span>
             </div>
-          </div>
-          <motion.button
+          </div>          <div className="d-flex justify-content-between align-items-center mb-4 mt-2">
+            <div className="futuristic-checkbox">
+              <input className="futuristic-checkbox-input" type="checkbox" id="rememberMe" />
+              <label className="futuristic-checkbox-label" htmlFor="rememberMe">
+                Remember me
+              </label>
+            </div>
+            <Link to="/forgot-password" className="futuristic-link">
+              Forgot Password?
+            </Link>
+          </div><motion.button
             type="submit"
-            className="btn btn-primary w-100 mb-3 py-2"
+            className="futuristic-button"
             disabled={isLoading}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.03, boxShadow: "0 0 20px 5px rgba(0, 195, 255, 0.7)" }}
+            whileTap={{ scale: 0.97 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 15,
+            }}
           >
             {isLoading ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                Logging in...
-              </>
+              <div className="button-content">
+                <div className="cyber-spinner"></div>
+                <span>Authenticating...</span>
+              </div>
             ) : (
-              "Log In"
+              <div className="button-content">
+                <span>Sign In</span>
+                <span className="button-glow"></span>
+              </div>
             )}
           </motion.button>
         </form>
-        <p className="text-center text-muted mb-0">Don't have an account?</p>
-        <Link to="/register" className="btn btn-outline-secondary w-100 mt-2">Create Account</Link>
+
+        <div className="futuristic-auth-link">
+          <p>Don't have an account?</p>
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 15,
+            }}
+          >
+            <Link to="/register" className="futuristic-alt-button">
+              <span>Create Account</span>
+              <span className="button-glow"></span>
+            </Link>
+          </motion.div>
+        </div>
       </motion.div>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

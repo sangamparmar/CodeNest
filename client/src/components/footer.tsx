@@ -1,5 +1,6 @@
 "use client"
 import { Github, Twitter, Linkedin } from "lucide-react"
+import React from "react"
 
 export default function Footer() {
   const footerLinks = [

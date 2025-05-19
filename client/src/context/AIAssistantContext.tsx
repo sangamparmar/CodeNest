@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { AIAssistantContext as AIAssistantContextType, AIMessage } from "@/types/aiAssistant";
-import { GenerativeModel, GoogleGenerativeAI } from "@google/generative-ai";
+import { GenerativeModel, GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { v4 as uuidv4 } from "uuid";
 import { formatDate } from "@/utils/formateDate";
 import { useFileSystem } from "./FileContext";
-import { toast } from "react-hot-toast";
 
 const AIAssistantContext = createContext<AIAssistantContextType | null>(null);
 
@@ -20,7 +19,7 @@ export const AIAssistantProvider = ({ children }: { children: ReactNode }) => {
     const [messages, setMessages] = useState<AIMessage[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const { activeFile } = useFileSystem();
-    const [genAI, setGenAI] = useState<GoogleGenerativeAI | null>(null);
+    const [, setGenAI] = useState<GoogleGenerativeAI | null>(null);
     const [model, setModel] = useState<GenerativeModel | null>(null);
     const [apiKeyError, setApiKeyError] = useState<string | null>(null);
 
@@ -34,15 +33,15 @@ export const AIAssistantProvider = ({ children }: { children: ReactNode }) => {
                 }
 
                 const API_KEY = apiKeyRaw.trim();
-                const ai = new GoogleGenerativeAI(API_KEY, { apiVersion: "v1" });
+                const ai = new GoogleGenerativeAI(API_KEY);
                 setGenAI(ai);
 
                 const generativeModel = ai.getGenerativeModel({
                     model: "gemini-2.0-flash-lite",
                     safetySettings: [
                         {
-                            category: "HARM_CATEGORY_HARASSMENT",
-                            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                            threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
                         }
                     ]
                 });

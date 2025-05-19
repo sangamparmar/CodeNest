@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { motion } from "framer-motion"
+import React from "react"
 
 export default function HeroAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -40,8 +41,8 @@ export default function HeroAnimation() {
       color: string
 
       constructor() {
-        this.x = (Math.random() * canvas.width) / window.devicePixelRatio
-        this.y = (Math.random() * canvas.height) / window.devicePixelRatio
+        this.x = (Math.random() * canvas!.width) / window.devicePixelRatio
+        this.y = (Math.random() * canvas!.height) / window.devicePixelRatio
         this.size = Math.random() * 3 + 1
         this.speedX = (Math.random() - 0.5) * 0.5
         this.speedY = (Math.random() - 0.5) * 0.5
@@ -52,15 +53,15 @@ export default function HeroAnimation() {
         this.x += this.speedX
         this.y += this.speedY
 
-        if (this.x < 0 || this.x > canvas.width / window.devicePixelRatio) this.speedX *= -1
-        if (this.y < 0 || this.y > canvas.height / window.devicePixelRatio) this.speedY *= -1
+        if (this.x < 0 || this.x > canvas!.width / window.devicePixelRatio) this.speedX *= -1
+        if (this.y < 0 || this.y > canvas!.height / window.devicePixelRatio) this.speedY *= -1
       }
 
       draw() {
-        ctx.fillStyle = this.color
-        ctx.beginPath()
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
-        ctx.fill()
+        ctx!.fillStyle = this.color
+        ctx!.beginPath()
+        ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+        ctx!.fill()
       }
     }
 
@@ -84,6 +85,7 @@ export default function HeroAnimation() {
       }
 
       draw() {
+        if (!ctx) return;
         if (this.distance < this.maxDistance) {
           const opacity = 1 - this.distance / this.maxDistance
           ctx.strokeStyle = `rgba(100, 149, 237, ${opacity * 0.5})`

@@ -116,7 +116,7 @@ function Directory({
 }) {
     const [isEditing, setEditing] = useState<boolean>(false)
     const dirRef = useRef<HTMLDivElement | null>(null)
-    const { coords, menuOpen, setMenuOpen } = useContextMenu({
+    const { showMenu, position, closeMenu } = useContextMenu({
         ref: dirRef,
     })
     const { deleteDirectory, toggleDirectory } = useFileSystem()
@@ -128,13 +128,13 @@ function Directory({
 
     const handleRenameDirectory = (e: MouseEvent) => {
         e.stopPropagation()
-        setMenuOpen(false)
+        closeMenu()
         setEditing(true)
     }
 
     const handleDeleteDirectory = (e: MouseEvent, id: Id) => {
         e.stopPropagation()
-        setMenuOpen(false)
+        closeMenu()
         const isConfirmed = confirm(
             `Are you sure you want to delete directory?`,
         )
@@ -212,15 +212,13 @@ function Directory({
                             setSelectedDirId={setSelectedDirId}
                         />
                     ))}
-            </div>
-
-            {menuOpen && (
+            </div>            {showMenu && (
                 <DirectoryMenu
                     handleDeleteDirectory={handleDeleteDirectory}
                     handleRenameDirectory={handleRenameDirectory}
                     id={item.id}
-                    left={coords.x}
-                    top={coords.y}
+                    left={position.x}
+                    top={position.y}
                 />
             )}
         </div>
@@ -240,7 +238,7 @@ const File = ({
     const { isMobile } = useWindowDimensions()
     const { activityState, setActivityState } = useAppContext()
     const fileRef = useRef<HTMLDivElement | null>(null)
-    const { menuOpen, coords, setMenuOpen } = useContextMenu({
+    const { showMenu, position, closeMenu } = useContextMenu({
         ref: fileRef,
     })
 
@@ -260,12 +258,12 @@ const File = ({
     const handleRenameFile = (e: MouseEvent) => {
         e.stopPropagation()
         setEditing(true)
-        setMenuOpen(false)
+        closeMenu()
     }
 
     const handleDeleteFile = (e: MouseEvent, id: Id) => {
         e.stopPropagation()
-        setMenuOpen(false)
+        closeMenu()
         const isConfirmed = confirm(`Are you sure you want to delete file?`)
         if (isConfirmed) {
             deleteFile(id)
@@ -322,10 +320,10 @@ const File = ({
             )}
 
             {/* Context Menu For File*/}
-            {menuOpen && (
+            {showMenu && (
                 <FileMenu
-                    top={coords.y}
-                    left={coords.x}
+                    top={position.y}
+                    left={position.x}
                     id={item.id}
                     handleRenameFile={handleRenameFile}
                     handleDeleteFile={handleDeleteFile}

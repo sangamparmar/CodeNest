@@ -15,7 +15,7 @@ interface UseContextMenuReturn {
 /**
  * Custom hook for handling context menus (right-click)
  */
-export const useContextMenu = (): UseContextMenuReturn => {
+export const useContextMenu = (_p0: {}): UseContextMenuReturn => {
   const [showMenu, setShowMenu] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 

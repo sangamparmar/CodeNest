@@ -1,7 +1,9 @@
-import React from "react";
-import ChatInput from "@/components/chats/ChatInput"
-import ChatList from "@/components/chats/ChatList"
-import useResponsive from "@/hooks/useResponsive"
+import { Suspense, lazy } from "react"
+import useResponsive from "@/hooks/useResponsive.tsx"
+import React from "react"
+
+const ChatInput = lazy(() => import("@/components/chats/ChatInput.tsx"))
+const ChatList = lazy(() => import("@/components/chats/ChatList.tsx"))
 
 const ChatsView = () => {
     const { viewHeight } = useResponsive()
@@ -13,9 +15,13 @@ const ChatsView = () => {
         >
             <h1 className="view-title">Group Chat</h1>
             {/* Chat list */}
-            <ChatList />
+            <Suspense fallback={<div>Loading chat...</div>}>
+                <ChatList />
+            </Suspense>
             {/* Chat input */}
-            <ChatInput />
+            <Suspense fallback={<div>Loading input...</div>}>
+                <ChatInput />
+            </Suspense>
         </div>
     )
 }

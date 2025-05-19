@@ -1,6 +1,6 @@
-import React from "react";
 import { useAppContext } from "@/context/AppContext"
 import { useChatRoom } from "@/context/ChatContext"
+import React from "react"
 import { SyntheticEvent, useEffect, useRef } from "react"
 
 function ChatList() {
@@ -40,30 +40,47 @@ function ChatList() {
             ref={messagesContainerRef}
             onScroll={handleScroll}
         >
-            {/* Chat messages */}
-            {messages.map((message, index) => {
-                return (
-                    <div
-                        key={index}
-                        className={
-                            "mb-2 w-[80%] self-end break-words rounded-md bg-dark px-3 py-2" +
-                            (message.username === currentUser.username
-                                ? " ml-auto "
-                                : "")
-                        }
-                    >
-                        <div className="flex justify-between">
-                            <span className="text-xs text-primary">
-                                {message.username}
-                            </span>
-                            <span className="text-xs text-white">
-                                {message.timestamp}
-                            </span>
+            {messages.length > 0 ? (
+                messages.map((message, index) => {
+                    const isSystemMessage = message.username === "System";
+                    const isCurrentUser = message.username === currentUser.username;
+                    
+                    return (
+                        <div
+                            key={message.id || index}
+                            className={`mb-3 w-[85%] break-words rounded-md px-3 py-2 ${
+                                isSystemMessage 
+                                    ? "mx-auto bg-gray-700/50 text-center" 
+                                    : isCurrentUser
+                                        ? "ml-auto bg-indigo-600 text-white" 
+                                        : "bg-slate-700 text-white"
+                            }`}
+                        >
+                            <div className="flex justify-between">
+                                <span className={`text-xs font-medium ${
+                                    isSystemMessage 
+                                        ? "text-gray-300" 
+                                        : isCurrentUser 
+                                            ? "text-white" 
+                                            : "text-indigo-200"
+                                }`}>
+                                    {message.username}
+                                </span>
+                                <span className="text-xs text-gray-300">
+                                    {message.timestamp}
+                                </span>
+                            </div>
+                            <p className={`py-1 ${isSystemMessage ? "text-gray-300 italic" : "text-white"}`}>
+                                {message.message}
+                            </p>
                         </div>
-                        <p className="py-1">{message.message}</p>
-                    </div>
-                )
-            })}
+                    )
+                })
+            ) : (
+                <div className="flex h-full flex-col items-center justify-center">
+                    <p className="text-gray-400">No messages yet</p>
+                </div>
+            )}
         </div>
     )
 }

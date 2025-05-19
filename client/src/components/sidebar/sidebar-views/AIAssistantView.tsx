@@ -1,13 +1,14 @@
-import React, { useState, useRef, FormEvent, useEffect } from "react";
-import { useAIAssistant } from "@/context/AIAssistantContext";
-import useResponsive from "@/hooks/useResponsive";
-import { useFileSystem } from "@/context/FileContext";
+import { useState, useRef, FormEvent, useEffect } from "react";
+import { useAIAssistant } from "@/context/AIAssistantContext.tsx";
+import useResponsive from "@/hooks/useResponsive.tsx";
+import { useFileSystem } from "@/context/FileContext.tsx";
 import { LuSendHorizontal, LuTrash } from "react-icons/lu";
 import { IoMdRefresh } from "react-icons/io";
 import { motion, AnimatePresence } from "framer-motion";
 import Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import React from "react";
 
 const AIAssistantView = () => {
     const { viewHeight } = useResponsive();
@@ -117,11 +118,11 @@ const AIAssistantView = () => {
                                     <div className="markdown-content">
                                         <Markdown
                                             components={{
-                                                code({node, inline, className, children, ...props}) {
+                                                code({node, className, children, ...props}: any) {
                                                     const match = /language-(\w+)/.exec(className || '');
-                                                    return !inline && match ? (
+                                                    return !props.inline && match ? (
                                                         <SyntaxHighlighter
-                                                            style={vscDarkPlus}
+                                                            style={vscDarkPlus as any}
                                                             language={match[1]}
                                                             PreTag="div"
                                                             {...props}

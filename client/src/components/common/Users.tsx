@@ -24,7 +24,7 @@ const User = ({ user }: { user: RemoteUser }) => {
     const { username, status, role } = user;
     const { socket } = useSocket();
     const { updateUserRole, isCurrentUserAdmin } = useRoomSettings();
-    const { showMenu, position, handleContextMenu, closeMenu } = useContextMenu();
+    const { showMenu, position, handleContextMenu, closeMenu } = useContextMenu({});
     const [showTooltip, setShowTooltip] = useState(false);
     
     const isCurrentUser = user.socketId === socket.id;

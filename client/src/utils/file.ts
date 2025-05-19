@@ -7,6 +7,7 @@ const initialCode = `function sayHi() {
 
 sayHi()`
 
+
 export const initialFileStructure: FileSystemItem = {
     name: "root",
     id: uuidv4(),

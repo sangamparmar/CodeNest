@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { ACTIVITY_STATE, DrawingData } from "@/types/app";
-import { USER_CONNECTION_STATUS, USER_STATUS } from "@/types/user";
+import { USER_CONNECTION_STATUS, USER_ROLE, USER_STATUS } from "@/types/user";
 import AppContext from "@/context/AppContext";
 
 // Mock functions for context setters
@@ -25,7 +25,11 @@ const MockComponent = () => {
       <button onClick={() => context?.setActivityState(ACTIVITY_STATE.CODING)}>
         Set Coding State
       </button>
-      <button onClick={() => context?.setUsers([{ username: "User2", roomId: "room2", status: USER_CONNECTION_STATUS.ONLINE, cursorPosition: 0, typing: false, currentFile: "file2", socketId: "socket2" }])}>
+      <button onClick={() => context?.setUsers([{
+        username: "User2", roomId: "room2", status: USER_CONNECTION_STATUS.ONLINE, cursorPosition: 0, typing: false, currentFile: "file2", socketId: "socket2",
+        inCall: false,
+        role: USER_ROLE.ADMIN
+      }])}>
         Set Users
       </button>
       <button
@@ -53,7 +57,10 @@ describe("AppContext", () => {
         value={{
           users: [],
           setUsers: mockSetUsers,
-          currentUser: { username: "Current User", roomId: "room1" },
+          currentUser: {
+            username: "Current User", roomId: "room1",
+            socketId: undefined
+          },
           setCurrentUser: mockSetCurrentUser,
           status: USER_STATUS.OFFLINE,
           setStatus: mockSetStatus,
@@ -61,6 +68,8 @@ describe("AppContext", () => {
           setActivityState: mockSetActivityState,
           drawingData: null,
           setDrawingData: mockSetDrawingData,
+          roomId: "room1",
+          setRoomId: jest.fn(),
         }}
       >
         <MockComponent />
@@ -77,7 +86,10 @@ describe("AppContext", () => {
         value={{
           users: [],
           setUsers: mockSetUsers,
-          currentUser: { username: "Current User", roomId: "room1" },
+          currentUser: {
+            username: "Current User", roomId: "room1",
+            socketId: undefined
+          },
           setCurrentUser: mockSetCurrentUser,
           status: USER_STATUS.OFFLINE,
           setStatus: mockSetStatus,
@@ -85,6 +97,8 @@ describe("AppContext", () => {
           setActivityState: mockSetActivityState,
           drawingData: null,
           setDrawingData: mockSetDrawingData,
+          roomId: "room1",
+          setRoomId: jest.fn(),
         }}
       >
         <MockComponent />
@@ -101,7 +115,10 @@ describe("AppContext", () => {
         value={{
           users: [],
           setUsers: mockSetUsers,
-          currentUser: { username: "Current User", roomId: "room1" },
+          currentUser: {
+            username: "Current User", roomId: "room1",
+            socketId: undefined
+          },
           setCurrentUser: mockSetCurrentUser,
           status: USER_STATUS.OFFLINE,
           setStatus: mockSetStatus,
@@ -109,6 +126,8 @@ describe("AppContext", () => {
           setActivityState: mockSetActivityState,
           drawingData: null,
           setDrawingData: mockSetDrawingData,
+          roomId: "room1",
+          setRoomId: jest.fn(),
         }}
       >
         <MockComponent />
@@ -135,7 +154,10 @@ describe("AppContext", () => {
         value={{
           users: [],
           setUsers: mockSetUsers,
-          currentUser: { username: "Current User", roomId: "room1" },
+          currentUser: {
+            username: "Current User", roomId: "room1",
+            socketId: undefined
+          },
           setCurrentUser: mockSetCurrentUser,
           status: USER_STATUS.OFFLINE,
           setStatus: mockSetStatus,
@@ -143,6 +165,8 @@ describe("AppContext", () => {
           setActivityState: mockSetActivityState,
           drawingData: null,
           setDrawingData: mockSetDrawingData,
+          roomId: "room1",
+          setRoomId: jest.fn(),
         }}
       >
         <MockComponent />

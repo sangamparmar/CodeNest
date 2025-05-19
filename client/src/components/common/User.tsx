@@ -4,7 +4,7 @@ import Avatar from "react-avatar";
 import { useMemo, useState } from "react";
 import { IoMdCheckmark } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
-import { LuMoreHorizontal } from "react-icons/lu";
+import { LuMoveHorizontal } from "react-icons/lu";
 import { useRoomSettings } from "@/context/RoomSettingsContext";
 import { useSocket } from "@/context/SocketContext";
 import useContextMenu from "@/hooks/useContextMenu";
@@ -17,7 +17,7 @@ interface UserProps {
 function User({ user }: UserProps) {
     const { socket } = useSocket();
     const { updateUserRole, respondToEditRequest, pendingAccessRequests, isCurrentUserAdmin } = useRoomSettings();
-    const { showMenu, position, handleContextMenu, closeMenu } = useContextMenu();
+    const { showMenu, position, handleContextMenu, closeMenu } = useContextMenu({});
     const [targetUser, setTargetUser] = useState<RemoteUser | null>(null);
     const [showActionHint, setShowActionHint] = useState(false);
     
@@ -101,7 +101,7 @@ function User({ user }: UserProps) {
             {/* Right-click hint for admins (only shown on hover) */}
             {showActionHint && canModifyUser && (
                 <div className="absolute -right-8 top-0">
-                    <LuMoreHorizontal className="text-gray-400" />
+                    <LuMoveHorizontal className="text-gray-400" />
                     <div className="absolute -top-8 left-1/2 w-32 -translate-x-1/2 transform rounded bg-gray-900 px-2 py-1 text-xs text-gray-200">
                         Right-click to manage permissions
                     </div>

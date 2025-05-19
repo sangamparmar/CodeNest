@@ -3,6 +3,7 @@ import React, { Suspense, lazy, useState, useEffect } from 'react';
 import Toast from './components/toast/Toast';
 import GitHubCorner from './components/GitHubCorner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { ThemeProvider } from './components/theme-provider';
 
 // Use lazy loading for all pages to improve initial load time
 const Home = lazy(() => import('./pages/Home'));
@@ -58,6 +59,12 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}> {
 const App = () => {
   const [isAppReady, setIsAppReady] = useState(false);
   
+  // Ensure dark mode is applied immediately
+  useEffect(() => {
+    // Force dark mode by adding the class to html element
+    document.documentElement.classList.add('dark');
+  }, []);
+  
   // Give the app a moment to initialize
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -71,15 +78,15 @@ const App = () => {
   if (!isAppReady) {
     return <LoadingFallback />;
   }
-
   return (
     <ErrorBoundary>
-      <Router>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+      <ThemeProvider defaultTheme="dark" storageKey="codenest-theme" attribute="class">
+        <Router>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
             
             {/* Protected routes */}
             <Route path="/" element={
@@ -101,11 +108,11 @@ const App = () => {
             {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </Suspense>
-      </Router>
-      {/* Global Components */}
-      <Toast />
-      <GitHubCorner />
+        </Suspense>        </Router>
+        {/* Global Components */}
+        <Toast />
+        <GitHubCorner />
+      </ThemeProvider>
     </ErrorBoundary>
   );
 };

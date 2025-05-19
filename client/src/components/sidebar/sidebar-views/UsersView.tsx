@@ -1,33 +1,27 @@
-import React from "react";
-import Users from "@/components/common/Users";
-import { useAppContext } from "@/context/AppContext";
-import { useRoomSettings } from "@/context/RoomSettingsContext";
-import { useSocket } from "@/context/SocketContext";
-import { useViews } from "@/context/ViewContext";
+import Users from "@/components/common/Users.tsx";
+import { useAppContext } from "@/context/AppContext.tsx";
+import { useRoomSettings } from "@/context/RoomSettingsContext.tsx";
+import { useSocket } from "@/context/SocketContext.tsx";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { IoShareOutline } from "react-icons/io5";
-import { LuCopy, LuLogOut, LuPhoneCall } from "react-icons/lu";
-import useResponsive from "@/hooks/useResponsive";
-import { USER_ROLE } from "@/types/user";
-import { VIEWS } from "@/types/view";
+import { LuCopy, LuLogOut } from "react-icons/lu";
+import useResponsive from "@/hooks/useResponsive.tsx";
+import { USER_STATUS } from "@/types/user";
+import React from "react";
 
 function UsersView() {
     const navigate = useNavigate();
     const { viewHeight } = useResponsive();
-    const { setStatus, users, currentUser } = useAppContext();
+    const { setStatus } = useAppContext();
     const { socket } = useSocket();
-    const { setActiveView } = useViews();
-    const { everyoneCanEdit, toggleEveryoneCanEdit } = useRoomSettings();
+    const { everyoneCanEdit, toggleEveryoneCanEdit, isCurrentUserAdmin } = useRoomSettings();
 
-    // Get current user from users array to check role
-    const currentUserInRoom = users.find(u => u.username === currentUser.username);
-    const isAdmin = currentUserInRoom?.role === USER_ROLE.ADMIN;
+    const isAdmin = isCurrentUserAdmin();
 
     const copyURL = async () => {
         const pathname = window.location.pathname;
         try {
-            // Extract the unique identifier after "/editor/"
             const parts = pathname.split("/");
             const uniqueId = parts[parts.length - 1];
 
@@ -47,7 +41,6 @@ function UsersView() {
     const shareURL = async () => {
         const pathname = window.location.pathname;
         try {
-            // Extract the unique identifier after "/editor/"
             const parts = pathname.split("/");
             const uniqueId = parts[parts.length - 1];
 
@@ -57,9 +50,8 @@ function UsersView() {
             }
 
             if (navigator.share) {
-                await navigator.share({
-                    title: "Join my Code Together session",
-                    text: `Join my Code Together session with ID: ${uniqueId}`,
+                await navigator.share({                    title: "Join my CodeNest session",
+                    text: `Join my CodeNest session with ID: ${uniqueId}`,
                 });
             } else {
                 await navigator.clipboard.writeText(uniqueId);
@@ -74,21 +66,10 @@ function UsersView() {
     const leaveRoom = () => {
         toast.success("Left the room");
         socket.disconnect();
-        setStatus("DISCONNECTED");
+        setStatus(USER_STATUS.OFFLINE);
         navigate("/");
     };
-    
-    const startVoiceChat = () => {
-        try {
-            setActiveView(VIEWS.VOICE_CALL);
-            toast.success("Joining voice chat...");
-        } catch (error) {
-            console.error("Voice chat error:", error);
-            toast.error("Could not join voice chat. Please try again.");
-        }
-    };
 
-    // Extract the room ID from the URL
     const pathname = window.location.pathname;
     const parts = pathname.split("/");
     const uniqueId = parts[parts.length - 1];
@@ -151,15 +132,6 @@ function UsersView() {
                         <LuLogOut size={22} />
                     </button>
                 </div>
-                
-                {/* Voice chat button */}
-                <button
-                    className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 p-3 text-white hover:bg-blue-700"
-                    onClick={startVoiceChat}
-                >
-                    <LuPhoneCall size={22} />
-                    <span>Join Voice Chat</span>
-                </button>
             </div>
             <div className="py-2">
                 <h4 className="pt-6 font-bold">Online Users</h4>

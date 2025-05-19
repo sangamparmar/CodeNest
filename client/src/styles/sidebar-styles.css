@@ -1,0 +1,74 @@
+/* Sidebar form inputs and select styles */
+.sidebar-select {
+  background-color: #3d404a; /* darkHover */
+  color: white !important;
+  border: none;
+  border-radius: 6px;
+  outline: none;
+}
+
+/* Style for dropdown options */
+.sidebar-select option {
+  background-color: #1e1e1e !important; /* dark background */
+  color: white !important;
+}
+
+/* Ensure all select options in the sidebar have proper contrast */
+select option {
+  background-color: #1e1e1e !important;
+  color: white !important;
+}
+
+/* Force browser-specific styling for select options */
+select::-ms-expand {
+  background-color: #1e1e1e;
+  color: white;
+}
+
+/* Firefox specific styling */
+@-moz-document url-prefix() {
+  select {
+    color: white;
+    background-color: #3d404a;
+  }
+  
+  select option {
+    background-color: #1e1e1e;
+    color: white;
+  }
+}
+
+/* Style for labels in sidebar */
+.sidebar-label {
+  color: #e1e1e1;
+  font-weight: 500;
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* Style for input fields */
+.sidebar-input {
+  background-color: #3d404a;
+  color: white !important;
+  border: none;
+  border-radius: 6px;
+  outline: none;
+  padding: 0.5rem 1rem;
+  width: 100%;
+}
+
+/* Style for textareas */
+textarea.sidebar-input {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Force text color in all form fields in sidebar */
+.view-title + div select,
+.view-title + div input[type="text"],
+.view-title + div input[type="password"],
+.view-title + div input[type="email"],
+.view-title + div input[type="number"],
+.view-title + div textarea {
+  color: white !important;
+}

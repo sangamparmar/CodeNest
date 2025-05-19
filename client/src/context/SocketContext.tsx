@@ -5,7 +5,7 @@ import {
     SocketContext as SocketContextType,
     SocketId,
 } from "@/types/socket"
-import { RemoteUser, USER_CONNECTION_STATUS, USER_ROLE, USER_STATUS, User } from "@/types/user"
+import { RemoteUser, USER_ROLE, USER_STATUS, User } from "@/types/user"
 import {
     ReactNode,
     createContext,
