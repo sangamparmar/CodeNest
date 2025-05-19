@@ -2,7 +2,7 @@
 
 # 🪺 CodeNest
 
-<img src="/placeholder.svg?height=200&width=200" alt="CodeNest Logo" style="margin-bottom: 20px"/>
+![Screenshot 2025-05-19 131750](https://github.com/user-attachments/assets/9f4534fc-d764-405f-a86a-1df552f0f47d)
 
 ### *Where Code Collaboration Takes Flight*
 
