@@ -21,9 +21,8 @@
 
 **CodeNest** creates a digital sanctuary for developers to collaborate in real-time. Multiple users can join a shared workspace using a unique room ID and work simultaneously on code with instant synchronization. Whether you're pair programming, teaching, or collaborating on a project, CodeNest provides the ideal environment with comprehensive language support and integrated communication tools.
 
-<div align="center">
-<img src="/placeholder.svg?height=400&width=800" alt="CodeNest Interface" style="border-radius: 10px; margin: 20px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.2);"/>
-</div>
+![Screenshot 2025-05-19 131857](https://github.com/user-attachments/assets/dce2da03-f735-4a21-8ba1-498eb0cd050a)
+
 
 ## ✨ Key Features
 
