@@ -6,7 +6,7 @@
 
 ### *Where Code Collaboration Takes Flight*
 
-[![Live Demo](https://img.shields.io/badge/LIVE-DEMO-brightgreen?style=for-the-badge)](https://codenest.vercel.app)
+[![Live Demo](https://img.shields.io/badge/LIVE-DEMO-brightgreen?style=for-the-badge)](https://eliteapp.tech/)
 [![GitHub Stars](https://img.shields.io/github/stars/yourusername/codenest?style=for-the-badge&color=yellow)](https://github.com/yourusername/codenest/stargazers)
 [![License](https://img.shields.io/badge/LICENSE-MIT-blue?style=for-the-badge)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-WELCOME-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
@@ -62,7 +62,7 @@
 
 <div align="center">
 
-[![Live Demo](https://img.shields.io/badge/EXPERIENCE-CODENEST-brightgreen?style=for-the-badge&color=4F46E5)](https://codenest.vercel.app)
+[![Live Demo](https://img.shields.io/badge/EXPERIENCE-CODENEST-brightgreen?style=for-the-badge&color=4F46E5)](https://eliteapp.tech/)
 
 </div>
 
